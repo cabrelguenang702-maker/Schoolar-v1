@@ -139,3 +139,4 @@ les requêtes. Si une page affiche un comportement inattendu, le problème (et
 sa correction) se trouve presque toujours dans la méthode correspondante de
 ce fichier — jamais dans les fichiers de `frontend/js/pages/`, qui n'ont pas
 été modifiés.
+"# Schoolar-v1" 
