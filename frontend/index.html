@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>SCHOOLAR — Plateforme scolaire du Cameroun</title>
+<meta name="description" content="SCHOOLAR — Plateforme web nationale de gestion scolaire du Cameroun">
+
+<!-- PWA : installation comme application mobile (Android + iOS) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5B4FE5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SCHOOLAR">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%235B4FE5%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<!-- Configuration d'environnement (URL de l'API backend) — voir netlify.toml
+     pour l'injection automatique de cette valeur par déploiement Netlify. -->
+<script src="env-config.js"></script>
+<!-- Étape 14 — Leaflet (cartographie nationale, section 18). CDN gratuit, sans clé d'API,
+     cohérent avec les autres fournisseurs (Mobile Money, IA) nécessitant leurs propres identifiants. -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Étape 15 — génération de QR code côté client (vérification d'authenticité des bulletins, section 20). CDN gratuit, sans clé d'API. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<div id="app" class="app-root">
+  <!-- Le routeur JS injecte ici : écran de connexion, inscription, ou tableau de bord -->
+  <div class="boot-loader">
+    <div class="boot-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 3L1 8l11 5 9-4.09V17h2V8L12 3z" fill="white"/><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" fill="white"/></svg>
+    </div>
+    <div class="boot-spinner"></div>
+  </div>
+</div>
+
+<script src="js/i18n/fr.js"></script>
+<script src="js/i18n/en.js"></script>
+<script src="js/i18n.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/api.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pages/login.js"></script>
+<script src="js/pages/forgot-password.js"></script>
+<script src="js/pages/reset-password.js"></script>
+<script src="js/pages/legal.js"></script>
+<script src="js/pages/setup-national-admin.js"></script>
+<script src="js/pages/register-establishment.js"></script>
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/change-password.js"></script>
+<script src="js/pages/staff.js"></script>
+<script src="js/pages/classes.js"></script>
+<script src="js/pages/students.js"></script>
+<script src="js/pages/grades.js"></script>
+<script src="js/pages/attendance.js"></script>
+<script src="js/pages/discipline.js"></script>
+<script src="js/pages/timetable.js"></script>
+<script src="js/pages/progression.js"></script>
+<script src="js/pages/homework.js"></script>
+<script src="js/pages/messages.js"></script>
+<script src="js/pages/announcements.js"></script>
+<script src="js/pages/payments.js"></script>
+<script src="js/pages/documents.js"></script>
+<script src="js/pages/library.js"></script>
+<script src="js/pages/my-children.js"></script>
+<script src="js/pages/exam-taking.js"></script>
+<script src="js/pages/security.js"></script>
+<script src="js/pages/verify-bulletin.js"></script>
+<script src="js/pages/parent-invitation-confirm.js"></script>
+<script src="js/pages/admin-national.js"></script>
+<script src="js/pages/admin-change-request.js"></script>
+<script src="js/pages/admin-change-confirm.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Enregistrement du Service Worker (PWA) — rend l'app installable sur
+  // mobile et accélère les chargements suivants. Échec silencieux si le
+  // navigateur ne supporte pas les service workers ou si servi en http://
+  // non-localhost (les navigateurs exigent https:// pour cette API, sauf
+  // sur localhost/127.0.0.1 — donc ça fonctionnera en test XAMPP local).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {
+        // silencieux : l'app fonctionne normalement même sans SW (juste sans
+        // installation ni cache hors-ligne)
+      });
+    });
+  }
+</script>
+</body>
+</html>
