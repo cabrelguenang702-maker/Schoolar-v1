@@ -77,7 +77,7 @@ const LibraryPage = {
           <div class="field-input-wrap" style="max-width:220px;">
             <select id="lib-subject-filter">
               <option value="">${I18N.current === 'fr' ? 'Toutes les matières' : 'All subjects'}</option>
-              ${this.state.subjects.map(s => `<option value="${s.id}" ${this.state.subjectFilter === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+              ${this.state.subjects.map(s => `<option value="${s.id}" ${this.state.subjectFilter === s.id ? 'selected' : ''}>${UI.esc(s.name)}</option>`).join('')}
             </select>
           </div>
         ` : ''}
@@ -149,7 +149,7 @@ const LibraryPage = {
             <div class="field-input-wrap">
               <select id="res-subject">
                 <option value="">${t('none_option')}</option>
-                ${this.state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+                ${this.state.subjects.map(s => `<option value="${s.id}">${UI.esc(s.name)}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -218,11 +218,11 @@ const LibraryPage = {
         <div class="card">
           <div class="flex justify-between items-center">
             <span class="badge badge-info">${t('library_cat_' + r.category)}</span>
-            ${r.level ? `<span class="text-muted text-sm">${r.level}</span>` : ''}
+            ${r.level ? `<span class="text-muted text-sm">${UI.esc(r.level)}</span>` : ''}
           </div>
-          <h3 class="mt-8">${r.title}</h3>
-          ${r.description ? `<p class="text-muted text-sm mt-8">${r.description}</p>` : ''}
-          ${r.subject_name ? `<p class="text-sm mt-8">${r.subject_name}</p>` : ''}
+          <h3 class="mt-8">${UI.esc(r.title)}</h3>
+          ${r.description ? `<p class="text-muted text-sm mt-8">${UI.esc(r.description)}</p>` : ''}
+          ${r.subject_name ? `<p class="text-sm mt-8">${UI.esc(r.subject_name)}</p>` : ''}
           <div class="flex gap-8 mt-16" style="flex-wrap:wrap;">
             <a class="btn btn-primary btn-sm" href="${API.downloadLibraryResourceUrl(r.id)}" target="_blank" rel="noopener">${t('btn_download')}</a>
             ${this.canManage && !this.state.showTrash ? `<button class="btn btn-outline btn-sm" data-trash="${r.id}">${t('btn_trash')}</button>` : ''}

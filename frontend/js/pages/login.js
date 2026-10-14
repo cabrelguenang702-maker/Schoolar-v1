@@ -118,8 +118,8 @@ const LoginPage = {
             ${this.demoAccounts.map(d => `
               <div class="demo-row">
                 <span class="demo-role">${t(d.role_key)}</span>
-                <span class="demo-email">${d.email}</span>
-                <button type="button" class="btn btn-secondary btn-sm demo-use-btn" data-role="admin_national" data-email="${d.email}" data-password="${d.password}">${t('demo_use')}</button>
+                <span class="demo-email">${UI.esc(d.email)}</span>
+                <button type="button" class="btn btn-secondary btn-sm demo-use-btn" data-role="admin_national" data-email="${UI.esc(d.email)}" data-password="${d.password}">${t('demo_use')}</button>
               </div>
             `).join('')}
           </div>
@@ -190,7 +190,7 @@ const LoginPage = {
       const data = await API.searchEstablishments('', filter);
       this.state.establishments = data.establishments || [];
       select.innerHTML = `<option value="">${t('field_establishment_placeholder')}</option>` +
-        this.state.establishments.map(e => `<option value="${e.code}">${e.name} — ${e.region}</option>`).join('');
+        this.state.establishments.map(e => `<option value="${e.code}">${UI.esc(e.name)} — ${e.region}</option>`).join('');
     } catch (err) {
       // Silencieux : la liste peut être vide en tout début de projet (aucun établissement validé encore)
     }

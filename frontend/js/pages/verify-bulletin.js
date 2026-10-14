@@ -28,9 +28,9 @@ const VerifyBulletinPage = {
       box.innerHTML = `
         <div class="alert alert-success">${t('verify_valid')}</div>
         <div class="card mt-16">
-          <p><strong>${I18N.current === 'fr' ? 'Élève' : 'Student'} :</strong> ${b.first_name} ${b.last_name} (${b.matricule})</p>
-          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Établissement' : 'School'} :</strong> ${b.establishment_name} (${b.establishment_code})</p>
-          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Séquence' : 'Sequence'} :</strong> ${b.sequence_label}</p>
+          <p><strong>${I18N.current === 'fr' ? 'Élève' : 'Student'} :</strong> ${UI.esc(b.first_name)} ${UI.esc(b.last_name)} (${UI.esc(b.matricule)})</p>
+          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Établissement' : 'School'} :</strong> ${UI.esc(b.establishment_name)} (${b.establishment_code})</p>
+          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Séquence' : 'Sequence'} :</strong> ${UI.esc(b.sequence_label)}</p>
           <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Généré le' : 'Generated on'} :</strong> ${new Date(b.created_at).toLocaleDateString()}</p>
         </div>
       `;

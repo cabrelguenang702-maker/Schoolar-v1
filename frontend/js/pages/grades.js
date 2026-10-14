@@ -86,7 +86,7 @@ const GradesPage = {
             <label class="field-label">${t('field_sequence')}</label>
             <div class="field-input-wrap">
               <select id="seq-select">
-                ${this.state.sequences.map(s => `<option value="${s.id}" ${this.state.sequenceId === s.id ? 'selected' : ''}>${s.term_label ? s.term_label + ' — ' : ''}${s.label}</option>`).join('')}
+                ${this.state.sequences.map(s => `<option value="${s.id}" ${this.state.sequenceId === s.id ? 'selected' : ''}>${s.term_label ? s.term_label + ' — ' : ''}${UI.esc(s.label)}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -190,8 +190,8 @@ const GradesPage = {
       <div class="card mt-8">
         <div class="flex justify-between items-center">
           <div>
-            <strong>${e.classSubject.subject_name}</strong>
-            <span class="text-muted text-sm"> — ${e.class.level}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</span>
+            <strong>${UI.esc(e.classSubject.subject_name)}</strong>
+            <span class="text-muted text-sm"> — ${UI.esc(e.class.level)}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</span>
           </div>
           <button class="btn btn-primary btn-sm" data-open-entry="${idx}">${t('btn_grade_entry')}</button>
         </div>
@@ -223,8 +223,8 @@ const GradesPage = {
       <div class="card">
         <div class="card-title-row">
           <div>
-            <h3>${sheet.subject_name} <span class="text-muted text-sm">(coeff. ${sheet.coefficient})</span></h3>
-            <div class="text-sm text-muted mt-8">${entry.class.level}${entry.class.series ? ' ' + entry.class.series : ''}${entry.class.section ? ' ' + entry.class.section : ''} — ${sheet.sequence.label}</div>
+            <h3>${UI.esc(sheet.subject_name)} <span class="text-muted text-sm">(coeff. ${sheet.coefficient})</span></h3>
+            <div class="text-sm text-muted mt-8">${UI.esc(entry.class.level)}${entry.class.series ? ' ' + entry.class.series : ''}${entry.class.section ? ' ' + entry.class.section : ''} — ${UI.esc(sheet.sequence.label)}</div>
           </div>
           ${sheet.locked ? `<span class="badge badge-warning">${t('status_locked')}</span>` : `<span class="badge badge-info">${t('status_draft')}</span>`}
         </div>
@@ -245,7 +245,7 @@ const GradesPage = {
         <div class="mt-16">
           ${sheet.students.map(s => `
             <div class="flex items-center justify-between gap-8" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-              <div>${s.last_name} ${s.first_name} <span class="text-muted text-sm">${s.matricule}</span></div>
+              <div>${UI.esc(s.last_name)} ${UI.esc(s.first_name)} <span class="text-muted text-sm">${UI.esc(s.matricule)}</span></div>
               <input type="number" min="0" max="20" step="0.25" data-score="${s.student_id}" value="${s.score !== null ? s.score : ''}" ${sheet.locked ? 'disabled' : ''} style="width:90px;padding:8px;border:1px solid var(--color-border);border-radius:8px;text-align:center;">
             </div>
           `).join('')}
@@ -296,7 +296,7 @@ const GradesPage = {
           <div class="field-input-wrap">
             <select id="overview-class-select">
               <option value="">${t('none_option')}</option>
-              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -345,7 +345,7 @@ const GradesPage = {
           ${students.map(s => `
             <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
               <div>
-                <strong>${s.rank ? s.rank + '.' : '—'}</strong> ${s.last_name} ${s.first_name}
+                <strong>${s.rank ? s.rank + '.' : '—'}</strong> ${UI.esc(s.last_name)} ${UI.esc(s.first_name)}
                 ${s.missing_subjects > 0 ? `<span class="text-sm" style="color:var(--color-warning);"> (${s.missing_subjects} ${I18N.current === 'fr' ? 'matière(s) manquante(s)' : 'missing subject(s)'})</span>` : ''}
               </div>
               <div class="flex items-center gap-8">
@@ -378,7 +378,7 @@ const GradesPage = {
       await this.loadClassSummary();
     } catch (err) {
       if (err.errors && err.errors.missing_grades_count) {
-        errorBox.innerHTML = `<div class="alert alert-info mt-16">${err.message} <button class="btn btn-outline btn-sm mt-8" id="btn-force-validate">${t('btn_force_validate')}</button></div>`;
+        errorBox.innerHTML = `<div class="alert alert-info mt-16">${UI.esc(err.message)} <button class="btn btn-outline btn-sm mt-8" id="btn-force-validate">${t('btn_force_validate')}</button></div>`;
         const forceBtn = errorBox.querySelector('#btn-force-validate');
         if (forceBtn) forceBtn.addEventListener('click', () => this.handleValidate(true));
       } else {

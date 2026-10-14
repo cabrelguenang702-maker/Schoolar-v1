@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
       email: changeRequest.new_admin_email, password: body.password, email_confirm: true,
     });
     if (userError || !created?.user) {
-      const conflict = userError?.message?.toLowerCase().includes("already registered");
+      const conflict = (userError as { code?: string; message?: string } | null)?.code === "email_exists" || /already.*registered/i.test(userError?.message ?? "");
       return jsonResponse(req, { error: conflict ? "establishment_email_conflict" : "admin_change_validation_error" }, conflict ? 409 : 500);
     }
 

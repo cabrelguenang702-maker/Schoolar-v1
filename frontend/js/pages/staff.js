@@ -215,8 +215,8 @@ const StaffPage = {
           <div class="flex items-center gap-12">
             <div class="avatar">${UI.initials(s.first_name, s.last_name)}</div>
             <div>
-              <h3>${s.first_name} ${s.last_name}</h3>
-              <div class="text-sm text-muted mt-8">${I18N.current === 'fr' ? s.role_label_fr : s.role_label_en} · ${s.email}${s.phone ? ' · ' + s.phone : ''}</div>
+              <h3>${UI.esc(s.first_name)} ${UI.esc(s.last_name)}</h3>
+              <div class="text-sm text-muted mt-8">${I18N.current === 'fr' ? s.role_label_fr : s.role_label_en} · ${UI.esc(s.email)}${s.phone ? ' · ' + s.phone : ''}</div>
             </div>
           </div>
           ${UI.statusBadge(s.status)}

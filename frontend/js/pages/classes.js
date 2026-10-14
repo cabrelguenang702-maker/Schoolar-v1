@@ -82,7 +82,7 @@ const ClassesPage = {
       <h2>${t('classes_title')}</h2>
       <p class="text-muted text-sm mt-8">${t('classes_subtitle')}</p>
       <div class="role-tabs mt-16">
-        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${tb.label}</button>`).join('')}
+        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${UI.esc(tb.label)}</button>`).join('')}
       </div>
       <div class="mt-24" id="tab-content"></div>
     `;
@@ -167,7 +167,7 @@ const ClassesPage = {
             <label class="field-label">${t('field_school_year')}</label>
             <div class="field-input-wrap">
               <select id="cl-year">
-                ${this.state.schoolYears.map(y => `<option value="${y.id}" ${currentYear && y.id === currentYear.id ? 'selected' : ''}>${y.label}${y.is_current ? ' ★' : ''}</option>`).join('')}
+                ${this.state.schoolYears.map(y => `<option value="${y.id}" ${currentYear && y.id === currentYear.id ? 'selected' : ''}>${UI.esc(y.label)}${y.is_current ? ' ★' : ''}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -201,7 +201,7 @@ const ClassesPage = {
               <div class="field-input-wrap">
                 <select id="cl-homeroom">
                   <option value="">${t('none_option')}</option>
-                  ${this.state.teachingStaff.map(s => `<option value="${s.id}">${s.first_name} ${s.last_name} (${t('role_' + s.role_code)})</option>`).join('')}
+                  ${this.state.teachingStaff.map(s => `<option value="${s.id}">${UI.esc(s.first_name)} ${UI.esc(s.last_name)} (${t('role_' + s.role_code)})</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -261,7 +261,7 @@ const ClassesPage = {
       <div class="card mt-16">
         <div class="card-title-row">
           <div>
-            <h3>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</h3>
+            <h3>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</h3>
             <div class="text-sm text-muted mt-8">
               ${c.room ? c.room + ' · ' : ''}${c.homeroom_first_name ? (I18N.current === 'fr' ? 'PP: ' : 'Homeroom: ') + c.homeroom_first_name + ' ' + c.homeroom_last_name : ''}
             </div>
@@ -320,13 +320,13 @@ const ClassesPage = {
           ${cls.subjects.map(s => `
             <div class="flex items-center justify-between gap-8 mt-8" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
               <div style="flex:1;">
-                <strong>${s.subject_name}</strong>
+                <strong>${UI.esc(s.subject_name)}</strong>
                 <span class="text-muted text-sm"> · ${t('field_coefficient')}: ${parseFloat(s.coefficient)}</span>
               </div>
               ${canManageThisClass ? `
                 <select data-teacher-select="${s.id}" style="max-width:220px;">
                   <option value="">${t('none_option')}</option>
-                  ${this.state.teachingStaff.map(st => `<option value="${st.id}" ${s.teacher_id === st.id ? 'selected' : ''}>${st.first_name} ${st.last_name}</option>`).join('')}
+                  ${this.state.teachingStaff.map(st => `<option value="${st.id}" ${s.teacher_id === st.id ? 'selected' : ''}>${UI.esc(st.first_name)} ${UI.esc(st.last_name)}</option>`).join('')}
                 </select>
                 <button class="btn btn-outline btn-sm" data-action="remove-subject" data-row="${s.id}">✕</button>
               ` : `<span class="text-sm text-muted">${s.teacher_first_name ? s.teacher_first_name + ' ' + s.teacher_last_name : '—'}</span>`}
@@ -400,7 +400,7 @@ const ClassesPage = {
     container.innerHTML = `
       <div class="flex gap-8 items-center mt-8" style="flex-wrap:wrap;">
         <select id="new-subj-${cls.id}">
-          ${availableSubjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+          ${availableSubjects.map(s => `<option value="${s.id}">${UI.esc(s.name)}</option>`).join('')}
         </select>
         <input type="number" step="0.5" min="0" id="new-coef-${cls.id}" placeholder="${t('field_coefficient')}" style="width:100px;" value="1">
         <button class="btn btn-primary btn-sm" id="confirm-add-subj-${cls.id}">${t('btn_add_subject')}</button>
@@ -491,7 +491,7 @@ const ClassesPage = {
     container.innerHTML = `<div class="card"><table style="width:100%;border-collapse:collapse;">
       ${this.state.subjects.map(s => `
         <tr style="border-bottom:1px solid var(--color-border);">
-          <td style="padding:10px 4px;font-weight:600;">${s.name}</td>
+          <td style="padding:10px 4px;font-weight:600;">${UI.esc(s.name)}</td>
           <td style="padding:10px 4px;color:var(--color-text-muted);">${s.code || ''}</td>
           <td style="padding:10px 4px;text-align:right;"><button class="btn btn-outline btn-sm" data-action="archive-subject" data-id="${s.id}">${t('btn_archive')}</button></td>
         </tr>
@@ -553,7 +553,7 @@ const ClassesPage = {
       <div class="card">
         ${this.state.templates.length ? this.state.templates.map(tp => `
           <div class="flex items-center justify-between gap-8" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-            <div><strong>${tp.subject_name}</strong></div>
+            <div><strong>${UI.esc(tp.subject_name)}</strong></div>
             <div class="flex items-center gap-8">
               <input type="number" step="0.5" min="0" value="${parseFloat(tp.coefficient)}" data-coef="${tp.id}" style="width:80px;padding:6px;border:1px solid var(--color-border);border-radius:8px;">
               <button class="btn btn-outline btn-sm" data-remove-tpl="${tp.id}">✕</button>
@@ -563,7 +563,7 @@ const ClassesPage = {
 
         ${availableSubjects.length ? `
           <div class="flex gap-8 items-center mt-16" style="flex-wrap:wrap;">
-            <select id="tpl-add-subject">${availableSubjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}</select>
+            <select id="tpl-add-subject">${availableSubjects.map(s => `<option value="${s.id}">${UI.esc(s.name)}</option>`).join('')}</select>
             <input type="number" step="0.5" min="0" id="tpl-add-coef" value="1" style="width:90px;">
             <button class="btn btn-primary btn-sm" id="tpl-add-btn">${I18N.current === 'fr' ? 'Ajouter au modèle' : 'Add to template'}</button>
           </div>
@@ -678,7 +678,7 @@ const ClassesPage = {
       <div class="card mt-8">
         <div class="flex justify-between items-center">
           <div>
-            <strong>${y.label}</strong>
+            <strong>${UI.esc(y.label)}</strong>
             <div class="text-sm text-muted">${y.start_date} → ${y.end_date}</div>
           </div>
           ${y.is_current ? `<span class="badge badge-success">★ ${I18N.current === 'fr' ? 'Courante' : 'Current'}</span>` : `<button class="btn btn-outline btn-sm" data-set-current="${y.id}">${set_as_current_label()}</button>`}

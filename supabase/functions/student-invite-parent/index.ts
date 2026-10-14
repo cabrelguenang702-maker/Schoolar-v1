@@ -2,7 +2,7 @@
 // Remplace StudentController::inviteParent().
 import { handleOptions, jsonResponse } from "../_shared/cors.ts";
 import { supabaseAdmin } from "../_shared/supabase-admin.ts";
-import { getCallerProfile } from "../_shared/caller.ts";
+import { getCallerProfile, asCaller } from "../_shared/caller.ts";
 import { auditLog, requestIp } from "../_shared/audit.ts";
 import { generateInvitationToken } from "../_shared/codes.ts";
 import { sendEmail } from "../_shared/notify.ts";
@@ -32,13 +32,9 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (!student) return jsonResponse(req, { error: "student_not_found" }, 404);
 
-  const allowedDirect = ["proviseur", "principal", "directeur", "secretaire"].includes(caller.roleCode);
-  let allowed = allowedDirect;
-  if (!allowed && caller.roleCode === "professeur_principal" && student.class_id) {
-    const { data: owns } = await db.from("classes").select("id").eq("id", student.class_id).eq("homeroom_teacher_id", caller.id).maybeSingle();
-    allowed = !!owns;
-  }
-  if (!allowed) return jsonResponse(req, { error: "student_manage_denied" }, 403);
+  // Règle unique, définie en base (migration 0022) : hiérarchie + secrétaire ; enseignants pour leurs élèves.
+  const { data: allowed } = await asCaller(req).rpc("can_invite_parent_for_student", { p_student_id: student.id });
+  if (allowed !== true) return jsonResponse(req, { error: "student_manage_denied" }, 403);
 
   const email = String(body.email).toLowerCase();
 

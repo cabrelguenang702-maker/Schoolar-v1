@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       establishment_id: caller.establishment_id,
       type: "announcement",
       title: body.title,
-      body: body.body,
+      body: String(body.body).length > 500 ? String(body.body).slice(0, 497) + "…" : body.body,
       link: "#/announcements",
     });
   }

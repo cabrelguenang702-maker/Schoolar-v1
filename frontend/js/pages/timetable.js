@@ -50,7 +50,7 @@ const TimetablePage = {
           <div class="field-input-wrap">
             <select id="tt-class-select">
               <option value="">${t('none_option')}</option>
-              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -116,7 +116,7 @@ const TimetablePage = {
             <label class="field-label">${t('field_subject')}</label>
             <div class="field-input-wrap">
               <select id="tt-subject">
-                ${this.state.classDetail.subjects.map(s => `<option value="${s.id}">${s.subject_name}${s.teacher_first_name ? ' — ' + s.teacher_first_name + ' ' + s.teacher_last_name : ''}</option>`).join('')}
+                ${this.state.classDetail.subjects.map(s => `<option value="${s.id}">${UI.esc(s.subject_name)}${s.teacher_first_name ? ' — ' + s.teacher_first_name + ' ' + s.teacher_last_name : ''}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -174,7 +174,7 @@ const TimetablePage = {
       } catch (err) {
         let html = `<div class="alert alert-error">${err.message || 'Erreur.'}</div>`;
         if (Array.isArray(err.errors)) {
-          html += err.errors.map(c => `<div class="alert alert-info mt-8">${t('conflict_type_' + c.type)} — ${c.subject_name} (${c.start_time}–${c.end_time})</div>`).join('');
+          html += err.errors.map(c => `<div class="alert alert-info mt-8">${t('conflict_type_' + c.type)} — ${UI.esc(c.subject_name)} (${c.start_time}–${c.end_time})</div>`).join('');
         }
         errorBox.innerHTML = html;
       }
@@ -197,7 +197,7 @@ const TimetablePage = {
         ${byDay[day].sort((a, b) => a.start_time.localeCompare(b.start_time)).map(e => `
           <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
             <div>
-              <strong>${e.start_time.slice(0, 5)}–${e.end_time.slice(0, 5)}</strong> — ${e.subject_name}
+              <strong>${e.start_time.slice(0, 5)}–${e.end_time.slice(0, 5)}</strong> — ${UI.esc(e.subject_name)}
               ${e.room ? ' · ' + e.room : ''}
               ${e.teacher_first_name ? ' · ' + e.teacher_first_name + ' ' + e.teacher_last_name : ''}
               ${e.level ? ' · ' + e.level + (e.series ? ' ' + e.series : '') + (e.section ? ' ' + e.section : '') : ''}

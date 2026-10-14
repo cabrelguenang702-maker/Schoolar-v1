@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       email_confirm: true,
     });
     if (userError || !created?.user) {
-      const conflict = userError?.message?.toLowerCase().includes("already registered");
+      const conflict = (userError as { code?: string; message?: string } | null)?.code === "email_exists" || /already.*registered/i.test(userError?.message ?? "");
       return jsonResponse(req, { error: conflict ? "staff_email_conflict" : "staff_creation_error" }, conflict ? 409 : 500);
     }
 

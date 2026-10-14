@@ -44,8 +44,7 @@ Deno.serve(async (req) => {
   if (!authorized) return jsonResponse(req, { error: "student_manage_denied" }, 403);
   if (!student.class_id) return jsonResponse(req, { error: "student_no_class" }, 422);
 
-  const { data: activeSub } = await db.from("bulletin_subscriptions").select("id").eq("student_id", student.id).eq("status", "active").maybeSingle();
-  if (!activeSub) return jsonResponse(req, { error: "bulletin_subscription_required" }, 403);
+  // Le bulletin officiel est gratuit : aucun abonnement requis (migration 0023).
 
   const { data: sequence } = await db.from("sequences").select("id, label").eq("id", body.sequence_id).eq("establishment_id", caller.establishment_id).maybeSingle();
   if (!sequence) return jsonResponse(req, { error: "sequence_not_found" }, 404);

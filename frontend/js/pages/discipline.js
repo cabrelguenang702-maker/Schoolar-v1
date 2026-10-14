@@ -54,7 +54,7 @@ const DisciplinePage = {
           <div class="field-input-wrap">
             <select id="f-class-filter">
               <option value="">${I18N.current === 'fr' ? 'Toutes les classes' : 'All classes'}</option>
-              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.classFilter === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.classFilter === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
             </select>
           </div>
           <div class="field-input-wrap">
@@ -106,7 +106,7 @@ const DisciplinePage = {
             <div class="field-input-wrap">
               <select id="rp-class">
                 <option value="">${t('none_option')}</option>
-                ${this.state.classes.map(c => `<option value="${c.id}">${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+                ${this.state.classes.map(c => `<option value="${c.id}">${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -131,6 +131,7 @@ const DisciplinePage = {
           <div class="field-group mt-16">
             <label class="field-label">${t('field_description')}</label>
             <div class="field-input-wrap"><input id="rp-description"></div>
+            <label class="flex items-center gap-8 mt-8 text-sm"><input type="checkbox" id="rp-share" checked> ${t('discipline_share_with_parents')}</label>
           </div>
           <div id="report-form-error"></div>
           <div class="flex gap-8 mt-24">
@@ -148,7 +149,7 @@ const DisciplinePage = {
       if (!e.target.value) { studentSelect.innerHTML = `<option value="">${t('none_option')}</option>`; studentSelect.disabled = true; return; }
       try {
         const d = await API.listStudents(`?class_id=${e.target.value}`);
-        studentSelect.innerHTML = d.students.map(s => `<option value="${s.id}">${s.last_name} ${s.first_name}</option>`).join('');
+        studentSelect.innerHTML = d.students.map(s => `<option value="${s.id}">${UI.esc(s.last_name)} ${UI.esc(s.first_name)}</option>`).join('');
         studentSelect.disabled = false;
       } catch { studentSelect.disabled = true; }
     });
@@ -169,6 +170,7 @@ const DisciplinePage = {
       category: this.content.querySelector('#rp-category').value,
       incident_date: this.content.querySelector('#rp-date').value,
       description: this.content.querySelector('#rp-description').value,
+      visible_to_parents: this.content.querySelector('#rp-share').checked,
     };
 
     const btn = this.content.querySelector('#report-form-submit');
@@ -198,13 +200,13 @@ const DisciplinePage = {
       <div class="card mt-16">
         <div class="card-title-row">
           <div>
-            <h3>${r.student_first_name} ${r.student_last_name} <span class="text-muted text-sm">${r.level ? '· ' + r.level + (r.series ? ' ' + r.series : '') + (r.section ? ' ' + r.section : '') : ''}</span></h3>
-            <div class="text-sm text-muted mt-8">${t('discipline_category_' + r.category)} · ${r.incident_date} · ${t('reported_by')}: ${r.reported_by_first_name} ${r.reported_by_last_name}</div>
+            <h3>${UI.esc(r.student_first_name)} ${UI.esc(r.student_last_name)} <span class="text-muted text-sm">${r.level ? '· ' + r.level + (r.series ? ' ' + r.series : '') + (r.section ? ' ' + r.section : '') : ''}</span></h3>
+            <div class="text-sm text-muted mt-8">${t('discipline_category_' + r.category)} · ${r.incident_date} · ${t('reported_by')}: ${UI.esc(r.reported_by_first_name)} ${UI.esc(r.reported_by_last_name)}</div>
           </div>
           <span class="badge badge-${r.status === 'resolved' ? 'success' : 'warning'}">${t('status_' + r.status)}</span>
         </div>
-        ${r.description ? `<p class="text-sm mt-8">${r.description}</p>` : ''}
-        ${r.resolution_note ? `<div class="alert alert-success mt-8">${r.resolution_note}</div>` : ''}
+        ${r.description ? `<p class="text-sm mt-8">${UI.esc(r.description)}</p>` : ''}
+        ${r.resolution_note ? `<div class="alert alert-success mt-8">${UI.esc(r.resolution_note)}</div>` : ''}
         ${this.canManage && r.status === 'open' ? `<button class="btn btn-outline btn-sm mt-16" data-resolve="${r.id}">${t('btn_resolve')}</button>` : ''}
       </div>
     `).join('');

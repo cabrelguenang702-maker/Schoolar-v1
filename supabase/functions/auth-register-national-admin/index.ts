@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   });
 
   if (createError || !created?.user) {
-    const isConflict = createError?.message?.toLowerCase().includes("already registered");
+    const isConflict = (createError as { code?: string; message?: string } | null)?.code === "email_exists" || /already.*registered/i.test(createError?.message ?? "");
     return jsonResponse(
       req,
       { error: isConflict ? "national_admin_already_exists" : "server_error" },

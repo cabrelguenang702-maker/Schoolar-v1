@@ -54,7 +54,7 @@ const HomeworkPage = {
           <div class="field-input-wrap">
             <select id="hw-entry-select">
               <option value="">${t('none_option')}</option>
-              ${this.state.myEntries.map((e, i) => `<option value="${i}">${e.classSubject.subject_name} — ${e.class.level}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</option>`).join('')}
+              ${this.state.myEntries.map((e, i) => `<option value="${i}">${UI.esc(e.classSubject.subject_name)} — ${UI.esc(e.class.level)}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -102,7 +102,7 @@ const HomeworkPage = {
           <div class="card mt-8">
             <div class="flex justify-between items-center">
               <div>
-                <strong>${a.title}</strong>
+                <strong>${UI.esc(a.title)}</strong>
                 <div class="text-sm text-muted mt-8">${t('field_due_date')}: ${a.due_date} · ${a.submission_count} ${I18N.current === 'fr' ? 'soumission(s)' : 'submission(s)'}</div>
               </div>
               <button class="btn btn-outline btn-sm" data-view="${a.id}">${t('btn_view_details')}</button>
@@ -180,11 +180,11 @@ const HomeworkPage = {
 
     container.innerHTML = `
       <div class="card">
-        <h3>${t('homework_tracking_title')} — ${d.assignment.title}</h3>
+        <h3>${t('homework_tracking_title')} — ${UI.esc(d.assignment.title)}</h3>
         <div class="mt-16">
           ${d.submissions.map(s => `
             <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-              <div>${s.last_name} ${s.first_name} <span class="text-muted text-sm">${new Date(s.submitted_at).toLocaleString()}</span></div>
+              <div>${UI.esc(s.last_name)} ${UI.esc(s.first_name)} <span class="text-muted text-sm">${new Date(s.submitted_at).toLocaleString()}</span></div>
               <div class="flex items-center gap-8">
                 <span class="badge badge-${s.reviewed ? 'success' : 'info'}">${s.reviewed ? t('homework_reviewed_badge') : t('homework_submitted_badge')}</span>
                 <a class="btn btn-outline btn-sm" href="${API.downloadHomeworkSubmissionUrl(s.id)}" target="_blank">${t('btn_download')}</a>
@@ -194,7 +194,7 @@ const HomeworkPage = {
           `).join('')}
           ${d.not_submitted.map(s => `
             <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-              <div>${s.last_name} ${s.first_name}</div>
+              <div>${UI.esc(s.last_name)} ${UI.esc(s.first_name)}</div>
               <span class="badge badge-warning">${t('homework_not_submitted_badge')}</span>
             </div>
           `).join('')}

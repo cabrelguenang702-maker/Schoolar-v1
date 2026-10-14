@@ -48,7 +48,7 @@ const ProgressionPage = {
           <div class="field-input-wrap">
             <select id="pg-entry-select">
               <option value="">${t('none_option')}</option>
-              ${this.state.myEntries.map((e, i) => `<option value="${i}">${e.classSubject.subject_name} — ${e.class.level}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</option>`).join('')}
+              ${this.state.myEntries.map((e, i) => `<option value="${i}">${UI.esc(e.classSubject.subject_name)} — ${UI.esc(e.class.level)}${e.class.series ? ' ' + e.class.series : ''}${e.class.section ? ' ' + e.class.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -100,7 +100,7 @@ const ProgressionPage = {
             <div class="flex items-center justify-between" style="padding:10px 0;border-bottom:1px solid var(--color-border);">
               <div class="flex items-center gap-8">
                 <span style="opacity:.6;">${item.order_index}.</span>
-                <span style="${item.completed ? 'text-decoration:line-through;color:var(--color-text-muted);' : ''}">${item.title}</span>
+                <span style="${item.completed ? 'text-decoration:line-through;color:var(--color-text-muted);' : ''}">${UI.esc(item.title)}</span>
               </div>
               <div class="flex items-center gap-8">
                 ${item.completed

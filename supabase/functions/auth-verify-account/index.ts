@@ -9,9 +9,13 @@ import { generateSixDigitCode, sha256Hex } from "../_shared/codes.ts";
 import { sendEmail, sendSms } from "../_shared/notify.ts";
 
 async function findUnverifiedAdmin(db: ReturnType<typeof supabaseAdmin>, email: string, establishmentCode?: string) {
+  // FK nommée : l'embed "establishments" seul est ambigu depuis la migration 0002.
+  const embed = establishmentCode
+    ? "establishments!profiles_establishment_id_fkey!inner(code)"
+    : "establishments!profiles_establishment_id_fkey(code)";
   let query = db
     .from("profiles")
-    .select("id, email, phone, establishment_id, admin_verified_at, roles!inner(code), establishments(code)")
+    .select(`id, email, phone, establishment_id, admin_verified_at, roles!inner(code), ${embed}`)
     .eq("email", email)
     .in("roles.code", ["proviseur", "principal", "directeur"])
     .is("admin_verified_at", null);

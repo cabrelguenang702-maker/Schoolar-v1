@@ -149,8 +149,8 @@ const DocumentsPage = {
     try {
       const data = await API.listStudents(`?q=${encodeURIComponent(q)}`);
       resultsBox.innerHTML = data.students.slice(0, 6).map(s => `
-        <div class="flex justify-between items-center text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);cursor:pointer;" data-pick-student="${s.id}" data-pick-name="${s.first_name} ${s.last_name} (${s.matricule})">
-          <span>${s.first_name} ${s.last_name} — ${s.matricule}</span>
+        <div class="flex justify-between items-center text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);cursor:pointer;" data-pick-student="${s.id}" data-pick-name="${UI.esc(s.first_name)} ${UI.esc(s.last_name)} (${UI.esc(s.matricule)})">
+          <span>${UI.esc(s.first_name)} ${UI.esc(s.last_name)} — ${UI.esc(s.matricule)}</span>
         </div>
       `).join('');
       resultsBox.querySelectorAll('[data-pick-student]').forEach(row => {
@@ -158,7 +158,7 @@ const DocumentsPage = {
           this.state.selectedStudent = { id: row.dataset.pickStudent, name: row.dataset.pickName };
           resultsBox.innerHTML = '';
           container.querySelector('#doc-student-search').value = '';
-          container.querySelector('#doc-student-selected').innerHTML = `<span class="badge badge-info">${this.state.selectedStudent.name}</span>`;
+          container.querySelector('#doc-student-selected').innerHTML = `<span class="badge badge-info">${UI.esc(this.state.selectedStudent.name)}</span>`;
         });
       });
     } catch { /* silencieux */ }
@@ -220,7 +220,7 @@ const DocumentsPage = {
       <tbody>
         ${this.state.documents.map(d => `
           <tr style="border-top:1px solid var(--color-border);">
-            <td style="padding:8px;">${d.title}</td>
+            <td style="padding:8px;">${UI.esc(d.title)}</td>
             <td style="padding:8px;"><span class="badge badge-neutral">${t('document_cat_' + d.category)}</span></td>
             <td style="padding:8px;">${d.student_first_name ? d.student_first_name + ' ' + d.student_last_name + ' (' + d.matricule + ')' : (I18N.current === 'fr' ? 'Établissement' : 'School-wide')}</td>
             <td style="padding:8px;text-align:right;">

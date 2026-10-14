@@ -137,6 +137,7 @@ const _ERR_FR = {
 
   messaging_cannot_message_self: "Vous ne pouvez pas vous envoyer un message à vous-même.",
   messaging_recipient_not_found: "Destinataire introuvable.",
+  messaging_recipient_not_allowed: "Vous pouvez uniquement écrire au personnel de l'établissement.",
   messaging_access_denied: "Vous n'avez pas accès à cette conversation.",
   messaging_body_required: "Le message ne peut pas être vide.",
 
@@ -288,7 +289,7 @@ function _signedDownloadUrl(fnName, idParam, id) {
 function _flattenRole(row) {
   if (!row) return row;
   const { roles, ...rest } = row;
-  return { ...rest, role_code: roles?.code, role_label_fr: roles?.label_fr, role_label_en: roles?.label_en };
+  return { ...rest, role_code: roles?.code, role_label_fr: roles?.label_fr, role_label_en: roles?.label_en, role_scope: roles?.scope };
 }
 
 const API = {
@@ -320,8 +321,8 @@ const API = {
     const { data: verify, error: verifyError } = await _sb.auth.mfa.verify({ factorId: factor.id, challengeId: challenge.id, code });
     if (verifyError) _throwNormalized('login_invalid_credentials');
 
-    const profile = _flattenRole(await _query(_sb.from('profiles').select('id, email, first_name, last_name, establishment_id, must_change_password, roles(code), establishments(education_level)').eq('id', verify.user.id).single()));
-    return { token: verify.access_token, user: { id: profile.id, email: profile.email, role_code: profile.role_code, establishment_id: profile.establishment_id, establishment_education_level: profile.establishments?.education_level ?? null, totp_enabled: true, must_change_password: profile.must_change_password } };
+    const profile = _flattenRole(await _query(_sb.from('profiles').select('id, email, first_name, last_name, establishment_id, must_change_password, roles(code, label_fr, label_en, scope), establishments!profiles_establishment_id_fkey(name, education_level)').eq('id', verify.user.id).single()));
+    return { token: verify.access_token, user: { id: profile.id, email: profile.email, first_name: profile.first_name, last_name: profile.last_name, role_code: profile.role_code, role_label_fr: profile.role_label_fr, role_label_en: profile.role_label_en, role_scope: profile.role_scope, establishment_name: profile.establishments?.name ?? null, establishment_id: profile.establishment_id, establishment_education_level: profile.establishments?.education_level ?? null, totp_enabled: true, must_change_password: profile.must_change_password } };
   },
 
   registerEstablishment(payload) { return _edge('auth-register-establishment', payload, { auth: false }); },
@@ -353,11 +354,11 @@ const API = {
   async me() {
     if (!_cachedSupabaseUser) _throwNormalized('unauthorized');
     const profile = _flattenRole(await _query(
-      _sb.from('profiles').select('id, email, first_name, last_name, phone, photo_url, language_pref, establishment_id, must_change_password, roles(code, label_fr, label_en), establishments(education_level)').eq('id', _cachedSupabaseUser.id).single()
+      _sb.from('profiles').select('id, email, first_name, last_name, phone, photo_url, language_pref, establishment_id, must_change_password, roles(code, label_fr, label_en, scope), establishments!profiles_establishment_id_fkey(name, education_level)').eq('id', _cachedSupabaseUser.id).single()
     ));
     const { data: factors } = await _sb.auth.mfa.listFactors();
     const totpEnabled = (factors?.totp || []).some((f) => f.status === 'verified');
-    return { user: { ...profile, establishment_education_level: profile.establishments?.education_level ?? null, totp_enabled: totpEnabled } };
+    return { user: { ...profile, establishment_name: profile.establishments?.name ?? null, establishment_education_level: profile.establishments?.education_level ?? null, totp_enabled: totpEnabled } };
   },
 
   async logout() {
@@ -712,7 +713,7 @@ const API = {
   async startConversation(recipientUserId) { return _rpc('start_or_get_conversation', { p_recipient_id: recipientUserId }); },
   async getMessages(conversationId) {
     const rows = await _query(_sb.from('messages').select('*').eq('conversation_id', conversationId).order('created_at'));
-    await _query(_sb.from('conversation_participants').update({ last_read_at: new Date().toISOString() }).eq('conversation_id', conversationId).eq('profile_id', API.getCachedSupabaseUser()?.id));
+    await _query(_sb.from('conversation_participants').update({ last_read_at: new Date().toISOString() }).eq('conversation_id', conversationId).eq('user_id', API.getCachedSupabaseUser()?.id));
     return { messages: rows };
   },
   sendMessage(conversationId, body) { return _edge('messaging-send', { conversation_id: conversationId, body }); },
@@ -733,12 +734,20 @@ const API = {
   // ==================== Notifications in-app ====================
   async listNotifications() { return { notifications: await _query(_sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(50)) }; },
   async unreadNotificationCount() {
-    const { count } = await _sb.from('notifications').select('id', { count: 'exact', head: true }).eq('profile_id', API.getCachedSupabaseUser()?.id).is('read_at', null);
+    const { count } = await _sb.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', API.getCachedSupabaseUser()?.id).is('read_at', null);
     return { count: count ?? 0 };
   },
+  // ==================== Vie scolaire : réunions et événements ====================
+  async listEvents() { return { events: await _query(_sb.from('school_events').select('*, classes(level, series, section)').order('starts_at', { ascending: true })) }; },
+  async createEvent(payload) {
+    const me = API.getCachedSupabaseUser();
+    const { data: prof } = await _sb.from('profiles').select('establishment_id').eq('id', me.id).single();
+    return { event: await _query(_sb.from('school_events').insert({ ...payload, establishment_id: prof.establishment_id, created_by_profile_id: me.id }).select().single()) };
+  },
+  async deleteEvent(id) { await _query(_sb.from('school_events').delete().eq('id', id)); return {}; },
   async markNotificationRead(id) { await _query(_sb.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id)); return {}; },
   async markAllNotificationsRead() {
-    await _query(_sb.from('notifications').update({ read_at: new Date().toISOString() }).eq('profile_id', API.getCachedSupabaseUser()?.id).is('read_at', null));
+    await _query(_sb.from('notifications').update({ read_at: new Date().toISOString() }).eq('user_id', API.getCachedSupabaseUser()?.id).is('read_at', null));
     return {};
   },
 
@@ -878,16 +887,15 @@ const API = {
 
   // ==================== Bulletins pilotés par IA ====================
   async bulletinStatus(studentId) {
-    const row = await _query(_sb.from('bulletin_subscriptions').select('*').eq('student_id', studentId).order('created_at', { ascending: false }).limit(1).maybeSingle());
+    // Le bulletin officiel est gratuit pour les familles : plus d'abonnement (migration 0023).
     const { data: student } = await _sb.from('students').select('class_id').eq('id', studentId).single();
     let template = null;
     if (student?.class_id) {
       const { data: tpl } = await _sb.from('bulletin_templates').select('id').eq('class_id', student.class_id).maybeSingle();
       template = tpl;
     }
-    return { subscription: row, is_active: row?.status === 'active', template_available: !!template };
+    return { is_active: true, template_available: !!template };
   },
-  subscribeBulletin(studentId, payload) { return _rpc('bulletin_subscribe', { p_student_id: studentId, p_method: payload.method, p_phone: payload.phone }); },
   uploadBulletinTemplate(classId, file) {
     const formData = new FormData();
     formData.append('class_id', classId);

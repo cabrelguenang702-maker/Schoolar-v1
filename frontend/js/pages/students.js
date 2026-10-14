@@ -19,6 +19,8 @@ const StudentsPage = {
     this.root = root;
     this.user = user;
     this.canManage = ['proviseur', 'principal', 'directeur', 'secretaire', 'professeur_principal'].includes(user.role_code);
+    // Invitation des parents : la hiérarchie et les enseignants (la base limite les enseignants à leurs élèves).
+    this.canInviteParent = ['proviseur', 'principal', 'directeur', 'censeur', 'surveillant_general', 'secretaire', 'enseignant', 'professeur_principal'].includes(user.role_code);
 
     await this.loadClasses();
     await this.loadStudents();
@@ -65,7 +67,7 @@ const StudentsPage = {
           <div class="field-input-wrap">
             <select id="f-class-filter">
               <option value="">${I18N.current === 'fr' ? 'Toutes les classes' : 'All classes'}</option>
-              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.classFilter === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+              ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.classFilter === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -147,7 +149,7 @@ const StudentsPage = {
               <div class="field-input-wrap">
                 <select id="st-class">
                   <option value="">${t('none_option')}</option>
-                  ${this.state.classes.map(c => `<option value="${c.id}" ${prefill && prefill.class_id === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+                  ${this.state.classes.map(c => `<option value="${c.id}" ${prefill && prefill.class_id === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
                 </select>
               </div>
             </div>
@@ -238,7 +240,7 @@ const StudentsPage = {
       } else {
         const data = await API.createStudent(payload);
         warnings = data.warnings || [];
-        successBox.innerHTML = `<div class="alert alert-success"><strong>${t('student_created_title')}</strong> — ${I18N.current === 'fr' ? 'Matricule' : 'Student ID'}: ${data.matricule}</div>`;
+        successBox.innerHTML = `<div class="alert alert-success"><strong>${t('student_created_title')}</strong> — ${I18N.current === 'fr' ? 'Matricule' : 'Student ID'}: ${UI.esc(data.matricule)}</div>`;
         this.content.querySelector('#student-form').reset();
       }
       if (warnings.length) {
@@ -267,8 +269,8 @@ const StudentsPage = {
           <div class="flex items-center gap-12">
             <div class="avatar">${UI.initials(s.first_name, s.last_name)}</div>
             <div>
-              <h3>${s.last_name} ${s.first_name}</h3>
-              <div class="text-sm text-muted mt-8">${s.matricule} ${s.level ? '· ' + s.level + (s.series ? ' ' + s.series : '') + (s.section ? ' ' + s.section : '') : ''}</div>
+              <h3>${UI.esc(s.last_name)} ${UI.esc(s.first_name)}</h3>
+              <div class="text-sm text-muted mt-8">${UI.esc(s.matricule)} ${s.level ? '· ' + s.level + (s.series ? ' ' + s.series : '') + (s.section ? ' ' + s.section : '') : ''}</div>
             </div>
           </div>
           <button class="btn btn-outline btn-sm" data-action="toggle" data-id="${s.id}">${this.state.expandedStudentId === s.id ? (I18N.current === 'fr' ? 'Fermer' : 'Close') : t('btn_view_details')}</button>
@@ -311,19 +313,19 @@ const StudentsPage = {
         </div>
         ${student.parents.length ? student.parents.map(p => `
           <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-            <div><strong>${p.first_name} ${p.last_name}</strong> <span class="text-muted text-sm">${p.relationship ? '(' + t('relationship_' + normalizeRel(p.relationship)) + ')' : ''}</span></div>
-            <div class="text-sm text-muted">${p.email}</div>
+            <div><strong>${UI.esc(p.first_name)} ${UI.esc(p.last_name)}</strong> <span class="text-muted text-sm">${p.relationship ? '(' + t('relationship_' + normalizeRel(p.relationship)) + ')' : ''}</span></div>
+            <div class="text-sm text-muted">${UI.esc(p.email)}</div>
           </div>
         `).join('') : `<p class="text-muted text-sm mt-8">${t('no_parents_yet')}</p>`}
 
         ${student.pending_invitations && student.pending_invitations.length ? `
           <h4 style="font-size:14px;margin-top:16px;">${t('pending_invitations_title')}</h4>
           ${student.pending_invitations.map(inv => `
-            <div class="text-sm text-muted" style="padding:6px 0;">${inv.invited_first_name} ${inv.invited_last_name} — ${inv.invited_email} <span class="badge badge-warning">${t('status_pending')}</span></div>
+            <div class="text-sm text-muted" style="padding:6px 0;">${UI.esc(inv.invited_first_name)} ${UI.esc(inv.invited_last_name)} — ${UI.esc(inv.invited_email)} <span class="badge badge-warning">${t('status_pending')}</span></div>
           `).join('')}
         ` : ''}
 
-        ${this.canManage ? `
+        ${this.canInviteParent ? `
           <div id="invite-form-${student.id}" class="mt-16"></div>
           <button class="btn btn-outline btn-sm mt-8" data-action="show-invite">${t('btn_invite_parent')}</button>
         ` : ''}
@@ -370,6 +372,11 @@ const StudentsPage = {
     this.loadExamsBox(box, student.id);
     this.loadBulletinsBox(box, student.id);
 
+    if (this.canInviteParent) {
+      const inviteBtn = box.querySelector('[data-action="show-invite"]');
+      if (inviteBtn) inviteBtn.addEventListener('click', () => this.paintInviteForm(box, student));
+    }
+
     if (this.canManage) {
       const editBtn = box.querySelector('[data-action="edit-student"]');
       if (editBtn) editBtn.addEventListener('click', () => {
@@ -377,9 +384,6 @@ const StudentsPage = {
         this.paintForm(student);
         this.content.querySelector('#student-form-container').scrollIntoView({ behavior: 'smooth' });
       });
-
-      const inviteBtn = box.querySelector('[data-action="show-invite"]');
-      if (inviteBtn) inviteBtn.addEventListener('click', () => this.paintInviteForm(box, student));
 
       const createAccountBtn = box.querySelector('[data-action="create-student-account"]');
       if (createAccountBtn) createAccountBtn.addEventListener('click', () => this.createStudentAccount(box, student));
@@ -399,7 +403,7 @@ const StudentsPage = {
         <div class="text-sm text-muted mt-8">${t('stat_absent')}: ${data.stats.absent_count} · ${t('stat_late')}: ${data.stats.late_count} · ${I18N.current === 'fr' ? 'Non justifiées' : 'Unjustified'}: ${data.stats.unjustified_count}</div>
         ${data.history.slice(0, 8).map(h => `
           <div class="flex items-center justify-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);">
-            <div>${h.session_date} — ${h.subject_name}</div>
+            <div>${h.session_date} — ${UI.esc(h.subject_name)}</div>
             <span class="badge badge-${h.status === 'absent' ? 'danger' : 'warning'}">${t('status_' + h.status)}${h.justified ? ' ✓' : ''}</span>
           </div>
         `).join('')}
@@ -426,7 +430,7 @@ const StudentsPage = {
           ${sequences.map(s => `
             <button type="button" class="btn btn-sm grade-pill" data-mode="sequence" data-seq="${s.id}"
               style="${s.id === defaultSeq.id ? 'background:var(--color-primary);color:#fff;border-color:var(--color-primary);' : 'background:#fff;'}">
-              ${s.label}
+              ${UI.esc(s.label)}
             </button>
           `).join('')}
           ${terms.map(term => `
@@ -498,7 +502,7 @@ const StudentsPage = {
         <div class="text-muted text-sm" style="font-weight:600;margin-top:4px;">${I18N.current === 'fr' ? 'Détail par séquence' : 'Breakdown by sequence'}</div>
         ${d.sequences.map(s => `
           <div class="flex items-center justify-between text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-            <div>${s.label}</div>
+            <div>${UI.esc(s.label)}</div>
             <div class="flex items-center" style="gap:8px;">
               <strong>${s.average !== null ? Number(s.average).toFixed(2) + '/20' : (I18N.current === 'fr' ? 'Pas de notes' : 'No grades')}</strong>
               ${s.rank !== null ? `<span class="text-muted">(${I18N.current === 'fr' ? 'rang' : 'rank'} ${s.rank})</span>` : ''}
@@ -539,7 +543,7 @@ const StudentsPage = {
         </div>
         ${d.subjects.map(s => `
           <div class="flex items-center justify-between text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-            <div>${s.subject_name} <span class="text-muted">(Coeff. ${s.coefficient})</span></div>
+            <div>${UI.esc(s.subject_name)} <span class="text-muted">(Coeff. ${s.coefficient})</span></div>
             <div class="flex items-center" style="gap:8px;">
               <strong>${s.score !== null ? Number(s.score).toFixed(1) + '/20' : '—'}</strong>
               ${mentionBadge(s.mention)}
@@ -648,7 +652,7 @@ const StudentsPage = {
       container.innerHTML = `
         <div class="alert alert-success">
           <p>${I18N.current === 'fr' ? 'Compte créé. Notez ces identifiants — ils ne seront plus affichés ensuite :' : 'Account created. Note these credentials — they will not be shown again:'}</p>
-          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Matricule' : 'Matricule'} :</strong> ${data.matricule}</p>
+          <p class="mt-8"><strong>${I18N.current === 'fr' ? 'Matricule' : 'Matricule'} :</strong> ${UI.esc(data.matricule)}</p>
           <p><strong>${I18N.current === 'fr' ? 'Mot de passe temporaire' : 'Temporary password'} :</strong> ${data.temp_password}</p>
           <p><strong>${I18N.current === 'fr' ? 'Code établissement' : 'Establishment code'} :</strong> ${data.establishment_code}</p>
         </div>
@@ -703,7 +707,7 @@ const StudentsPage = {
       const data = await API.listExams(studentId);
       container.innerHTML = data.exams.length ? data.exams.map(ex => `
         <a href="#/exams/${ex.id}" class="flex justify-between items-center text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);text-decoration:none;color:inherit;">
-          <div>${ex.subject_label} — ${ex.level}</div>
+          <div>${UI.esc(ex.subject_label)} — ${UI.esc(ex.level)}</div>
           <div>${ex.attempt_status === 'graded' ? `${ex.score} / ${ex.max_score}` : (I18N.current === 'fr' ? 'À passer' : 'To take')}</div>
         </a>
       `).join('') : `<p class="text-muted text-sm">${t('empty_exams')}</p>`;
@@ -731,7 +735,7 @@ const StudentsPage = {
       const data = await API.listBulletins(studentId);
       const listHtml = data.bulletins.length ? data.bulletins.map(b => `
         <div class="flex justify-between items-center text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);">
-          <div>${b.sequence_label}${b.term_label ? ' — ' + b.term_label : ''}</div>
+          <div>${UI.esc(b.sequence_label)}${b.term_label ? ' — ' + b.term_label : ''}</div>
           <button class="btn btn-outline btn-sm" data-view-bulletin="${b.id}">${I18N.current === 'fr' ? 'Voir' : 'View'}</button>
         </div>
       `).join('') : `<p class="text-muted text-sm">${t('empty_bulletins')}</p>`;
@@ -740,7 +744,7 @@ const StudentsPage = {
         ${sequences.length ? `
           <div class="flex items-center gap-8" style="flex-wrap:wrap;">
             <select id="bulletin-seq-${studentId}" style="padding:8px;border:1px solid var(--color-border);border-radius:8px;">
-              ${sequences.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
+              ${sequences.map(s => `<option value="${s.id}">${UI.esc(s.label)}</option>`).join('')}
             </select>
             <button class="btn btn-primary btn-sm" id="bulletin-gen-${studentId}">${t('btn_generate_bulletin')}</button>
           </div>

@@ -70,7 +70,7 @@ const PaymentsPage = {
       </div>
 
       <div class="role-tabs mt-16">
-        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${tb.label}</button>`).join('')}
+        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${UI.esc(tb.label)}</button>`).join('')}
       </div>
       <div class="mt-24" id="tab-content"></div>
     `;
@@ -130,7 +130,7 @@ const PaymentsPage = {
             <label class="field-label">${t('field_school_year')}</label>
             <div class="field-input-wrap">
               <select id="fee-year">
-                ${this.state.schoolYears.map(y => `<option value="${y.id}" ${currentYear && y.id === currentYear.id ? 'selected' : ''}>${y.label}${y.is_current ? ' ★' : ''}</option>`).join('')}
+                ${this.state.schoolYears.map(y => `<option value="${y.id}" ${currentYear && y.id === currentYear.id ? 'selected' : ''}>${UI.esc(y.label)}${y.is_current ? ' ★' : ''}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -214,7 +214,7 @@ const PaymentsPage = {
       <div class="card mt-16">
         <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:10px;">
           <div>
-            <h3>${f.label}</h3>
+            <h3>${UI.esc(f.label)}</h3>
             <div class="text-sm text-muted mt-8">
               ${f.level ? f.level + (f.series ? ' ' + f.series : '') : (I18N.current === 'fr' ? 'Tout établissement' : 'Whole school')}
               · ${Number(f.amount).toLocaleString()} FCFA
@@ -291,7 +291,7 @@ const PaymentsPage = {
       <tbody>
         ${this.state.invoices.map(inv => `
           <tr style="border-top:1px solid var(--color-border);">
-            <td style="padding:8px;">${inv.first_name} ${inv.last_name}<div class="text-muted text-sm">${inv.matricule}${inv.level ? ' · ' + inv.level : ''}</div></td>
+            <td style="padding:8px;">${UI.esc(inv.first_name)} ${UI.esc(inv.last_name)}<div class="text-muted text-sm">${UI.esc(inv.matricule)}${inv.level ? ' · ' + inv.level : ''}</div></td>
             <td style="padding:8px;">${inv.fee_label}</td>
             <td style="padding:8px;">
               ${Number(inv.amount_paid).toLocaleString()} / ${Number(inv.amount_due).toLocaleString()} FCFA

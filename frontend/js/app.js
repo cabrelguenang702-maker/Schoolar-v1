@@ -19,6 +19,7 @@ const App = {
     { pattern: '/legal', page: () => LegalPage, public: true },
     { pattern: '/register-establishment', page: () => RegisterEstablishmentPage, public: true },
     { pattern: '/dashboard', page: () => DashboardPage, public: false },
+    { pattern: '/events', page: () => EventsPage, public: false, roles: ['proviseur', 'principal', 'directeur', 'censeur', 'surveillant_general', 'surveillant_secteur', 'secretaire', 'econome', 'comptable', 'enseignant', 'professeur_principal', 'eleve', 'parent'] },
     { pattern: '/change-password', page: () => ChangePasswordPage, public: false },
     { pattern: '/staff', page: () => StaffPage, public: false, roles: ['proviseur', 'principal', 'directeur', 'censeur', 'secretaire'] },
     { pattern: '/classes', page: () => ClassesPage, public: false, roles: ['proviseur', 'principal', 'directeur', 'censeur', 'surveillant_general', 'enseignant', 'professeur_principal'] },

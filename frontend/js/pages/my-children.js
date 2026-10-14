@@ -47,9 +47,9 @@ const MyChildrenPage = {
               <div class="flex items-center gap-12">
                 <div class="avatar" style="width:52px;height:52px;font-size:16px;">${UI.initials(c.first_name, c.last_name)}</div>
                 <div>
-                  <h3>${c.first_name} ${c.last_name}</h3>
+                  <h3>${UI.esc(c.first_name)} ${UI.esc(c.last_name)}</h3>
                   <div class="text-sm text-muted mt-8">
-                    ${c.matricule}${c.level ? ' · ' + c.level + (c.series ? ' ' + c.series : '') + (c.section ? ' ' + c.section : '') : ''}
+                    ${UI.esc(c.matricule)}${c.level ? ' · ' + c.level + (c.series ? ' ' + c.series : '') + (c.section ? ' ' + c.section : '') : ''}
                     ${c.relationship ? ' · ' + (I18N.current === 'fr' ? 'Vous êtes' : 'You are') + ' ' + c.relationship : ''}
                   </div>
                 </div>
@@ -99,7 +99,7 @@ const MyChildrenPage = {
       <div class="mt-16" style="border-top:1px solid var(--color-border);padding-top:16px;">
         <div class="field-input-wrap" style="max-width:280px;">
           <select data-seq-select="${childId}">
-            ${this.state.sequences.map(s => `<option value="${s.id}" ${this.state.selectedSequenceByChild[childId] === s.id ? 'selected' : ''}>${s.term_label ? s.term_label + ' — ' : ''}${s.label}</option>`).join('')}
+            ${this.state.sequences.map(s => `<option value="${s.id}" ${this.state.selectedSequenceByChild[childId] === s.id ? 'selected' : ''}>${s.term_label ? s.term_label + ' — ' : ''}${UI.esc(s.label)}</option>`).join('')}
           </select>
         </div>
         <div id="bulletin-content-${childId}" class="mt-16"></div>
@@ -125,7 +125,7 @@ const MyChildrenPage = {
         <div class="hero-card" style="padding:18px;">
           <div class="hero-top">
             <div>
-              <div class="text-sm" style="opacity:.85">${data.sequence.label}</div>
+              <div class="text-sm" style="opacity:.85">${UI.esc(data.sequence.label)}</div>
               <div class="hero-value mt-8">${data.average !== null ? data.average : '—'}<small>/20</small></div>
             </div>
             ${data.rank !== null ? `<span class="pill">${I18N.current === 'fr' ? 'Rang' : 'Rank'} ${data.rank}${I18N.current === 'fr' ? 'e' : ''} / ${data.class_size}</span>` : ''}
@@ -134,14 +134,20 @@ const MyChildrenPage = {
         <div class="mt-16">
           ${data.subjects.map(s => `
             <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-              <div>${s.subject_name} <span class="text-muted text-sm">(coeff. ${s.coefficient})</span></div>
+              <div>${UI.esc(s.subject_name)} <span class="text-muted text-sm">(coeff. ${s.coefficient})</span></div>
               ${s.score !== null ? `<span class="badge badge-${s.mention === 'bien' ? 'success' : s.mention === 'passable' ? 'warning' : 'danger'}">${s.score}/20</span>` : `<span class="text-muted text-sm">—</span>`}
             </div>
           `).join('')}
         </div>
 
+        <h4 style="font-size:14px;margin-top:20px;">${t('child_timetable_title')}</h4>
+        <div id="timetable-summary-${childId}" class="mt-8"><div class="boot-spinner" style="margin:10px auto;width:20px;height:20px;"></div></div>
+
         <h4 style="font-size:14px;margin-top:20px;">${t('attendance_history_title')}</h4>
         <div id="attendance-summary-${childId}" class="mt-8"><div class="boot-spinner" style="margin:10px auto;width:20px;height:20px;"></div></div>
+
+        <h4 style="font-size:14px;margin-top:20px;">${t('child_behavior_title')}</h4>
+        <div id="behavior-summary-${childId}" class="mt-8"><div class="boot-spinner" style="margin:10px auto;width:20px;height:20px;"></div></div>
 
         <h4 style="font-size:14px;margin-top:20px;">${t('my_homework_title')}</h4>
         <div id="homework-summary-${childId}" class="mt-8"><div class="boot-spinner" style="margin:10px auto;width:20px;height:20px;"></div></div>
@@ -165,6 +171,8 @@ const MyChildrenPage = {
         <div id="bulletins-summary-${childId}" class="mt-8"><div class="boot-spinner" style="margin:10px auto;width:20px;height:20px;"></div></div>
       `;
 
+      this.loadTimetableSummary(childId);
+      this.loadBehaviorSummary(childId);
       this.loadAttendanceSummary(childId);
       this.loadHomeworkSummary(childId, box);
       this.loadFeesSummary(childId);
@@ -175,6 +183,45 @@ const MyChildrenPage = {
       this.loadBulletinsSummary(childId);
     } catch (err) {
       container.innerHTML = `<div class="alert alert-error">${err.message || 'Erreur.'}</div>`;
+    }
+  },
+
+  async loadTimetableSummary(childId) {
+    const container = this.content.querySelector(`#timetable-summary-${childId}`);
+    if (!container) return;
+    const child = this.state.children.find(c => c.id === childId);
+    try {
+      if (!child || !child.class_id) { container.innerHTML = `<p class="text-muted text-sm">${t('child_no_class')}</p>`; return; }
+      const data = await API.getClassTimetable(child.class_id);
+      if (!data.entries.length) { container.innerHTML = `<p class="text-muted text-sm">${t('child_timetable_empty')}</p>`; return; }
+      const days = {};
+      data.entries.forEach(e => { (days[e.day_of_week] = days[e.day_of_week] || []).push(e); });
+      container.innerHTML = Object.keys(days).sort().map(d => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--color-border);">
+          <strong class="text-sm">${t('day_' + d)}</strong>
+          ${days[d].map(e => `<div class="text-sm text-muted">${String(e.start_time).slice(0, 5)}–${String(e.end_time).slice(0, 5)} · ${e.subject_name || ''}${e.room ? ' · ' + e.room : ''}${e.teacher_last_name ? ' · ' + (e.teacher_first_name || '') + ' ' + e.teacher_last_name : ''}</div>`).join('')}
+        </div>`).join('');
+    } catch (err) {
+      container.innerHTML = `<p class="text-muted text-sm">${err.message || 'Erreur.'}</p>`;
+    }
+  },
+
+  async loadBehaviorSummary(childId) {
+    const container = this.content.querySelector(`#behavior-summary-${childId}`);
+    if (!container) return;
+    try {
+      const data = await API.studentDisciplineHistory(childId);
+      if (!data.history.length) { container.innerHTML = `<p class="text-muted text-sm">${t('child_behavior_empty')}</p>`; return; }
+      container.innerHTML = data.history.map(r => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--color-border);">
+          <div class="flex items-center justify-between">
+            <strong class="text-sm">${t('discipline_category_' + r.category)}</strong>
+            <span class="text-muted text-sm">${r.incident_date}</span>
+          </div>
+          ${r.description ? `<div class="text-sm mt-8">${UI.esc(r.description)}</div>` : ''}
+        </div>`).join('');
+    } catch (err) {
+      container.innerHTML = `<p class="text-muted text-sm">${err.message || 'Erreur.'}</p>`;
     }
   },
 
@@ -191,7 +238,7 @@ const MyChildrenPage = {
         <div class="text-sm text-muted mt-8">${t('stat_absent')}: ${data.stats.absent_count} · ${t('stat_late')}: ${data.stats.late_count}</div>
         ${data.history.slice(0, 5).map(h => `
           <div class="flex items-center justify-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);">
-            <div>${h.session_date} — ${h.subject_name}</div>
+            <div>${h.session_date} — ${UI.esc(h.subject_name)}</div>
             <span class="badge badge-${h.status === 'absent' ? 'danger' : 'warning'}">${t('status_' + h.status)}${h.justified ? ' ✓' : ''}</span>
           </div>
         `).join('')}
@@ -213,7 +260,7 @@ const MyChildrenPage = {
       container.innerHTML = data.assignments.slice(0, 6).map(a => `
         <div class="flex items-center justify-between text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
           <div>
-            <div>${a.title} <span class="text-muted">(${a.subject_name})</span></div>
+            <div>${UI.esc(a.title)} <span class="text-muted">(${UI.esc(a.subject_name)})</span></div>
             <div class="text-muted text-sm">${t('field_due_date')}: ${a.due_date}</div>
           </div>
           <div class="flex items-center gap-8">
@@ -394,7 +441,7 @@ const MyChildrenPage = {
       }
       container.innerHTML = `<h4 style="font-size:13px;">${t('checkout_times_title')}</h4>` + data.checkouts.map(c => `
         <div class="flex justify-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);">
-          <div>${c.session_date} — ${c.subject_name}</div>
+          <div>${c.session_date} — ${UI.esc(c.subject_name)}</div>
           <div class="text-muted">${new Date(c.checkout_at).toLocaleTimeString()}</div>
         </div>
       `).join('');
@@ -418,7 +465,7 @@ const MyChildrenPage = {
       container.innerHTML = data.documents.map(d => `
         <div class="flex items-center justify-between text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
           <div>
-            <div>${d.title}</div>
+            <div>${UI.esc(d.title)}</div>
             <span class="badge badge-neutral mt-8">${t('document_cat_' + d.category)}</span>
           </div>
           <a class="btn btn-outline btn-sm" href="${API.downloadDocumentUrl(d.id)}" target="_blank" rel="noopener">${t('btn_download')}</a>
@@ -481,7 +528,7 @@ const MyChildrenPage = {
         const examsData = await API.listExams(childId);
         examsHtml = examsData.exams.length ? examsData.exams.map(ex => `
           <a href="#/exams/${ex.id}" class="flex justify-between items-center text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);text-decoration:none;color:inherit;">
-            <div>${ex.subject_label} — ${ex.level} <span class="badge badge-neutral">${ex.difficulty}</span></div>
+            <div>${UI.esc(ex.subject_label)} — ${UI.esc(ex.level)} <span class="badge badge-neutral">${ex.difficulty}</span></div>
             <div>${ex.attempt_status === 'graded' ? `${ex.score} / ${ex.max_score}` : (I18N.current === 'fr' ? 'À passer' : 'To take')}</div>
           </a>
         `).join('') : `<p class="text-muted text-sm">${t('empty_exams')}</p>`;
@@ -582,57 +629,19 @@ const MyChildrenPage = {
     const container = this.content.querySelector(`#bulletins-summary-${childId}`);
     if (!container) return;
     try {
-      const status = await API.bulletinStatus(childId);
-      let bulletinsHtml = '';
-      if (status.is_active) {
-        const data = await API.listBulletins(childId);
-        bulletinsHtml = data.bulletins.length ? data.bulletins.map(b => `
-          <div class="flex justify-between items-center text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
-            <div>${b.sequence_label}${b.term_label ? ' — ' + b.term_label : ''}</div>
-            <button class="btn btn-outline btn-sm" data-view-bulletin="${b.id}">${I18N.current === 'fr' ? 'Voir / Imprimer' : 'View / Print'}</button>
-          </div>
-        `).join('') : `<p class="text-muted text-sm">${t('empty_bulletins')}</p>`;
-      }
-
-      container.innerHTML = status.is_active ? `
-        <div class="alert alert-success">${t('bulletin_active')}</div>
-        <div class="mt-16">${bulletinsHtml}</div>
-      ` : `
-        <p class="text-muted text-sm">${t('bulletin_pitch')}${!status.template_available ? ' ' + t('bulletin_no_template_yet') : ''}</p>
-        <div class="flex items-center gap-8 mt-8" style="flex-wrap:wrap;">
-          <select id="bulletin-method-${childId}" style="padding:10px;border:1px solid var(--color-border);border-radius:8px;">
-            <option value="orange_money">Orange Money</option>
-            <option value="mtn_momo">MTN MoMo</option>
-          </select>
-          <input id="bulletin-phone-${childId}" placeholder="${I18N.current === 'fr' ? 'Numéro de téléphone' : 'Phone number'}" style="padding:10px;border:1px solid var(--color-border);border-radius:8px;">
-          <button class="btn btn-primary btn-sm" id="bulletin-subscribe-${childId}">${t('btn_subscribe_bulletin')} — 500 FCFA</button>
+      // Bulletins officiels : consultation gratuite pour la famille (aucun abonnement).
+      const data = await API.listBulletins(childId);
+      container.innerHTML = data.bulletins.length ? data.bulletins.map(b => `
+        <div class="flex justify-between items-center text-sm" style="padding:8px 0;border-bottom:1px solid var(--color-border);">
+          <div>${UI.esc(b.sequence_label)}${b.term_label ? ' — ' + b.term_label : ''}</div>
+          <button class="btn btn-outline btn-sm" data-view-bulletin="${b.id}">${I18N.current === 'fr' ? 'Voir / Imprimer' : 'View / Print'}</button>
         </div>
-        <div id="bulletin-status-${childId}" class="mt-8"></div>
-      `;
-
+      `).join('') : `<p class="text-muted text-sm">${t('empty_bulletins')}</p>`;
       container.querySelectorAll('[data-view-bulletin]').forEach(btn => {
         btn.addEventListener('click', () => this.openBulletin(btn.dataset.viewBulletin));
       });
-
-      const subscribeBtn = container.querySelector(`#bulletin-subscribe-${childId}`);
-      if (subscribeBtn) subscribeBtn.addEventListener('click', async () => {
-        const method = container.querySelector(`#bulletin-method-${childId}`).value;
-        const phone = container.querySelector(`#bulletin-phone-${childId}`).value;
-        const statusBox = container.querySelector(`#bulletin-status-${childId}`);
-        if (!phone) return;
-        try {
-          const d = await API.subscribeBulletin(childId, { method, phone });
-          statusBox.innerHTML = `<div class="alert alert-info">${t('mobile_money_initiated')}</div>`;
-          try {
-            await API.confirmPayment(d.payment_id, true);
-            this.loadBulletinsSummary(childId);
-          } catch { /* confirmation dev indisponible en production */ }
-        } catch (err) {
-          statusBox.innerHTML = `<div class="alert alert-error">${err.message || 'Erreur.'}</div>`;
-        }
-      });
-    } catch {
-      container.innerHTML = `<p class="text-muted text-sm">—</p>`;
+    } catch (err) {
+      container.innerHTML = `<p class="text-muted text-sm">${err.message || 'Erreur.'}</p>`;
     }
   },
 
@@ -644,13 +653,13 @@ const MyChildrenPage = {
       overlay.className = 'receipt-print-area';
       overlay.style.cssText = 'position:fixed;inset:0;background:white;z-index:10000;padding:40px;max-width:640px;margin:40px auto;border:1px solid var(--color-border);border-radius:12px;overflow:auto;';
       overlay.innerHTML = `
-        <h2>${b.first_name} ${b.last_name}</h2>
-        <p class="text-muted text-sm">${b.matricule} — ${b.level || ''} ${b.series || ''}</p>
-        <p class="text-sm mt-8">${b.sequence_label}${b.term_label ? ' — ' + b.term_label : ''}</p>
+        <h2>${UI.esc(b.first_name)} ${UI.esc(b.last_name)}</h2>
+        <p class="text-muted text-sm">${UI.esc(b.matricule)} — ${b.level || ''} ${b.series || ''}</p>
+        <p class="text-sm mt-8">${UI.esc(b.sequence_label)}${b.term_label ? ' — ' + b.term_label : ''}</p>
         <table style="width:100%;border-collapse:collapse;margin-top:16px;">
           <thead><tr style="text-align:left;font-size:12px;color:var(--color-text-muted);"><th style="padding:6px;">${I18N.current === 'fr' ? 'Matière' : 'Subject'}</th><th style="padding:6px;">Coef.</th><th style="padding:6px;">${I18N.current === 'fr' ? 'Note' : 'Score'}</th><th style="padding:6px;">${I18N.current === 'fr' ? 'Appréciation' : 'Remark'}</th></tr></thead>
           <tbody>
-            ${(b.content.subjects || []).map(s => `<tr style="border-top:1px solid var(--color-border);"><td style="padding:6px;">${s.subject_name}</td><td style="padding:6px;">${s.coefficient}</td><td style="padding:6px;">${s.score ?? '—'}</td><td style="padding:6px;">${s.appreciation || ''}</td></tr>`).join('')}
+            ${(b.content.subjects || []).map(s => `<tr style="border-top:1px solid var(--color-border);"><td style="padding:6px;">${UI.esc(s.subject_name)}</td><td style="padding:6px;">${s.coefficient}</td><td style="padding:6px;">${s.score ?? '—'}</td><td style="padding:6px;">${s.appreciation || ''}</td></tr>`).join('')}
           </tbody>
         </table>
         <div class="hero-card mt-16" style="padding:16px;">

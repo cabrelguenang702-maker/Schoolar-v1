@@ -93,7 +93,7 @@ const AnnouncementsPage = {
           <label class="field-label">${t('field_class')}</label>
           <div class="field-input-wrap">
             <select id="an-class">
-              ${this.state.classes.map(c => `<option value="${c.id}">${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+              ${this.state.classes.map(c => `<option value="${c.id}">${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
             </select>
           </div>
         </div>
@@ -146,15 +146,15 @@ const AnnouncementsPage = {
       <div class="card mt-16">
         <div class="card-title-row">
           <div>
-            <h3>${a.title}</h3>
+            <h3>${UI.esc(a.title)}</h3>
             <div class="text-sm text-muted mt-8">
-              ${a.author_first_name} ${a.author_last_name} · ${new Date(a.created_at).toLocaleDateString()}
+              ${UI.esc(a.author_first_name)} ${UI.esc(a.author_last_name)} · ${new Date(a.created_at).toLocaleDateString()}
               ${a.level ? ' · ' + a.level + (a.series ? ' ' + a.series : '') + (a.section ? ' ' + a.section : '') : ''}
             </div>
           </div>
           <span class="badge badge-neutral">${t('audience_' + a.audience)}</span>
         </div>
-        <p class="text-sm mt-8">${a.body}</p>
+        <p class="text-sm mt-8">${UI.esc(a.body)}</p>
         ${(this.isAdmin || a.author_id === this.user.id) ? `<button class="btn btn-outline btn-sm mt-16" data-delete="${a.id}">${t('btn_delete')}</button>` : ''}
       </div>
     `).join('');

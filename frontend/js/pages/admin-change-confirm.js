@@ -43,8 +43,8 @@ const AdminChangeConfirmPage = {
           <div class="form-sub">${t('admin_change_confirm_subtitle')}</div>
 
           <div class="card mt-24">
-            <div class="text-sm text-muted">${info.establishment_name}</div>
-            <div style="font-weight:600;margin-top:4px;">${info.new_admin_first_name} ${info.new_admin_last_name}</div>
+            <div class="text-sm text-muted">${UI.esc(info.establishment_name)}</div>
+            <div style="font-weight:600;margin-top:4px;">${UI.esc(info.new_admin_first_name)} ${UI.esc(info.new_admin_last_name)}</div>
             <div class="text-sm text-muted">${info.new_admin_email}</div>
           </div>
 

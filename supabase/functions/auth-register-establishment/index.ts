@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
 
   if (userError || !created?.user) {
     await db.from("establishments").delete().eq("id", establishment.id);
-    const conflict = userError?.message?.toLowerCase().includes("already registered");
+    const conflict = (userError as { code?: string; message?: string } | null)?.code === "email_exists" || /already.*registered/i.test(userError?.message ?? "");
     return jsonResponse(req, { error: conflict ? "establishment_email_conflict" : "establishment_creation_error" }, conflict ? 409 : 500);
   }
 

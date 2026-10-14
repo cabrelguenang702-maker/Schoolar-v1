@@ -70,7 +70,7 @@ const ExamTakingPage = {
 
   renderIntro(exam) {
     return `
-      <h2>${exam.subject_label} — ${exam.level}</h2>
+      <h2>${UI.esc(exam.subject_label)} — ${UI.esc(exam.level)}</h2>
       <div class="card mt-16">
         <p>${I18N.current === 'fr' ? 'Difficulté' : 'Difficulty'}: <span class="badge badge-info">${exam.difficulty}</span></p>
         <p class="mt-8">${I18N.current === 'fr' ? 'Durée' : 'Duration'}: ${exam.time_limit_minutes} min</p>
@@ -84,7 +84,7 @@ const ExamTakingPage = {
   renderQuestions(exam, attempt) {
     return `
       <div class="flex justify-between items-center" style="flex-wrap:wrap;">
-        <h2>${exam.subject_label} — ${exam.level}</h2>
+        <h2>${UI.esc(exam.subject_label)} — ${UI.esc(exam.level)}</h2>
         <div class="hero-card" style="padding:8px 16px;"><span id="exam-timer" style="font-size:20px;font-weight:700;">--:--</span></div>
       </div>
       <form id="exam-form" class="mt-16">
@@ -113,7 +113,7 @@ const ExamTakingPage = {
   renderResults(exam, attempt) {
     const feedback = attempt.feedback || {};
     return `
-      <h2>${exam.subject_label} — ${exam.level}</h2>
+      <h2>${UI.esc(exam.subject_label)} — ${UI.esc(exam.level)}</h2>
       <div class="hero-card mt-16" style="padding:20px;">
         <div class="hero-value">${attempt.score} <small>/ ${attempt.max_score}</small></div>
         <p class="text-muted text-sm mt-8">${t('exam_submitted')}</p>
@@ -218,7 +218,7 @@ const ExamTakingPage = {
         <div class="card mt-8">
           ${data.ranking.map(r => `
             <div class="flex justify-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--color-border);">
-              <div>#${r.rank} — ${r.first_name} ${r.last_name}</div>
+              <div>#${r.rank} — ${UI.esc(r.first_name)} ${UI.esc(r.last_name)}</div>
               <div>${r.score} / ${r.max_score}</div>
             </div>
           `).join('')}

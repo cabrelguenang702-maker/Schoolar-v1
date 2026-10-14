@@ -43,7 +43,7 @@ const AttendancePage = {
             <div class="field-input-wrap">
               <select id="att-class-select">
                 <option value="">${t('none_option')}</option>
-                ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${c.level}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
+                ${this.state.classes.map(c => `<option value="${c.id}" ${this.state.selectedClassId === c.id ? 'selected' : ''}>${UI.esc(c.level)}${c.series ? ' ' + c.series : ''}${c.section ? ' ' + c.section : ''}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -52,7 +52,7 @@ const AttendancePage = {
             <div class="field-input-wrap">
               <select id="att-subject-select" ${!this.state.classDetail ? 'disabled' : ''}>
                 <option value="">${t('none_option')}</option>
-                ${this.availableSubjects().map(s => `<option value="${s.id}" ${this.state.selectedClassSubjectId === s.id ? 'selected' : ''}>${s.subject_name}</option>`).join('')}
+                ${this.availableSubjects().map(s => `<option value="${s.id}" ${this.state.selectedClassSubjectId === s.id ? 'selected' : ''}>${UI.esc(s.subject_name)}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -129,7 +129,7 @@ const AttendancePage = {
     container.innerHTML = `
       <div class="card">
         <div class="card-title-row">
-          <h3>${s.subject_name}</h3>
+          <h3>${UI.esc(s.subject_name)}</h3>
           <button class="btn btn-outline btn-sm" id="btn-mark-all-present">${t('btn_mark_all_present')}</button>
         </div>
         <div class="stat-grid mt-16" style="grid-template-columns:repeat(3,1fr);">
@@ -141,7 +141,7 @@ const AttendancePage = {
         <div class="mt-16">
           ${s.students.map(st => `
             <div class="flex items-center justify-between gap-8" style="padding:10px 0;border-bottom:1px solid var(--color-border);flex-wrap:wrap;">
-              <div style="min-width:160px;">${st.last_name} ${st.first_name} <span class="text-muted text-sm">${st.matricule}</span></div>
+              <div style="min-width:160px;">${UI.esc(st.last_name)} ${UI.esc(st.first_name)} <span class="text-muted text-sm">${UI.esc(st.matricule)}</span></div>
               <div class="flex items-center gap-8">
                 <select data-status="${st.student_id}" data-record="${st.record_id}">
                   <option value="present" ${st.status === 'present' ? 'selected' : ''}>${t('status_present')}</option>

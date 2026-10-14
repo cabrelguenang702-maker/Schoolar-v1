@@ -70,7 +70,7 @@ const AdminNationalPage = {
     const body = `
       <h2>${I18N.current === 'fr' ? 'Espace national SCHOOLAR' : 'SCHOOLAR national space'}</h2>
       <div class="role-tabs mt-16" id="admin-tabs">
-        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${tb.label}</button>`).join('')}
+        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${UI.esc(tb.label)}</button>`).join('')}
       </div>
       <div class="mt-24" id="admin-tab-content"></div>
     `;
@@ -110,8 +110,8 @@ const AdminNationalPage = {
       <div class="card mt-16">
         <div class="card-title-row">
           <div>
-            <h3>${e.name} <span class="text-muted text-sm">(${e.code})</span></h3>
-            <div class="text-sm text-muted mt-8">${e.region} · ${e.department} · ${e.establishment_type === 'lycee' ? 'Lycée' : 'Collège'} · ${e.email} · ${e.phone}</div>
+            <h3>${UI.esc(e.name)} <span class="text-muted text-sm">(${e.code})</span></h3>
+            <div class="text-sm text-muted mt-8">${e.region} · ${e.department} · ${e.establishment_type === 'lycee' ? 'Lycée' : 'Collège'} · ${UI.esc(e.email)} · ${UI.esc(e.phone)}</div>
           </div>
           ${UI.statusBadge(e.status)}
         </div>
@@ -170,10 +170,10 @@ const AdminNationalPage = {
       <div class="card mt-16">
         <div class="card-title-row">
           <div>
-            <h3>${r.establishment_name} <span class="text-muted text-sm">(${r.establishment_code})</span></h3>
+            <h3>${UI.esc(r.establishment_name)} <span class="text-muted text-sm">(${r.establishment_code})</span></h3>
             <div class="text-sm text-muted mt-8">
-              ${t('old_admin_label')}: ${r.old_admin_first_name ? `${r.old_admin_first_name} ${r.old_admin_last_name}` : '—'}
-              &nbsp;→&nbsp; ${t('new_admin_label')}: ${r.new_admin_first_name} ${r.new_admin_last_name} (${r.new_admin_email})
+              ${t('old_admin_label')}: ${r.old_admin_first_name ? `${UI.esc(r.old_admin_first_name)} ${UI.esc(r.old_admin_last_name)}` : '—'}
+              &nbsp;→&nbsp; ${t('new_admin_label')}: ${UI.esc(r.new_admin_first_name)} ${UI.esc(r.new_admin_last_name)} (${r.new_admin_email})
             </div>
           </div>
           ${UI.statusBadge(r.status)}
@@ -354,7 +354,7 @@ const AdminNationalPage = {
       const radius = Math.max(6, Math.min(20, 6 + Math.sqrt(e.student_count || 0)));
       L.circleMarker([parseFloat(e.latitude), parseFloat(e.longitude)], {
         radius, color: '#5B4FE5', fillColor: '#5B4FE5', fillOpacity: 0.5,
-      }).bindPopup(`<strong>${e.name}</strong><br>${e.region} · ${e.department}<br>${e.student_count} ${I18N.current === 'fr' ? 'élèves' : 'students'}`)
+      }).bindPopup(`<strong>${UI.esc(e.name)}</strong><br>${e.region} · ${e.department}<br>${e.student_count} ${I18N.current === 'fr' ? 'élèves' : 'students'}`)
         .addTo(map);
     });
   },

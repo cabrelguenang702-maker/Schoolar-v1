@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
       description: body.description ?? null,
       incident_date: body.incident_date || new Date().toISOString().slice(0, 10),
       reported_by_profile_id: caller.id,
+      visible_to_parents: body.visible_to_parents !== false,
     })
     .select("id")
     .single();
@@ -55,11 +56,12 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { error: "discipline_access_denied" }, 403);
   }
 
+  const shareWithParents = body.visible_to_parents !== false;
   const db = supabaseAdmin();
-  const { data: parents } = await db
+  const { data: parents } = shareWithParents ? await db
     .from("student_parents")
     .select("profiles!student_parents_parent_id_fkey(email, first_name, status)")
-    .eq("student_id", student.id);
+    .eq("student_id", student.id) : { data: [] as any[] };
 
   const categoryLabel = CATEGORY_LABELS[body.category] ?? body.category;
   for (const link of parents ?? []) {

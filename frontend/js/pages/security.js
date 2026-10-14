@@ -38,7 +38,7 @@ const SecurityPage = {
     const body = `
       <h2>${t('security_title')}</h2>
       <div class="role-tabs mt-16">
-        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${tb.label}</button>`).join('')}
+        ${tabs.map(tb => `<button type="button" class="role-tab ${this.state.tab === tb.key ? 'active' : ''}" data-tab="${tb.key}">${UI.esc(tb.label)}</button>`).join('')}
       </div>
       <div class="mt-24" id="tab-content"></div>
     `;
@@ -219,7 +219,7 @@ const SecurityPage = {
         <div class="flex justify-between items-start">
           <div>
             <span class="badge badge-${a.severity === 'critical' ? 'danger' : a.severity === 'warning' ? 'warning' : 'info'}">${a.severity}</span>
-            <p class="mt-8 text-sm">${a.message}</p>
+            <p class="mt-8 text-sm">${UI.esc(a.message)}</p>
             <p class="text-muted text-sm mt-8">${new Date(a.created_at).toLocaleString()}</p>
           </div>
           ${!a.acknowledged_at ? `<button class="btn btn-outline btn-sm" data-ack="${a.id}">${t('btn_acknowledge')}</button>` : `<span class="badge badge-success">${I18N.current === 'fr' ? 'Traitée' : 'Handled'}</span>`}
@@ -326,7 +326,7 @@ const SecurityPage = {
       <div class="card mt-8">
         <div class="flex justify-between items-center">
           <div>
-            <strong>${k.label}</strong>
+            <strong>${UI.esc(k.label)}</strong>
             <p class="text-muted text-sm mt-8">${k.key_prefix}••••••••••••••••••••</p>
             <p class="text-muted text-sm mt-8">${(JSON.parse(k.scopes) || []).join(', ')}</p>
           </div>

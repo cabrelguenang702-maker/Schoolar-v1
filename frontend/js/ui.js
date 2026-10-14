@@ -2,6 +2,11 @@
  * SCHOOLAR — Utilitaires d'interface partagés
  */
 const UI = {
+  // Échappe le texte saisi par un utilisateur avant insertion dans du HTML (anti-XSS).
+  esc(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  },
+
   toast(message, type = 'default') {
     const container = document.getElementById('toast-container');
     const el = document.createElement('div');

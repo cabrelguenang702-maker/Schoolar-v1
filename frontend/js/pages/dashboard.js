@@ -37,6 +37,7 @@ const DashboardPage = {
     }
     if (user.role_code !== 'admin_national') {
       items.push({ icon: 'bell', label_fr: t('nav_announcements'), label_en: t('nav_announcements'), href: '#/announcements' });
+      items.push({ icon: 'info', label_fr: t('nav_events'), label_en: t('nav_events'), href: '#/events' });
       items.push({ icon: 'mail', label_fr: t('nav_messages'), label_en: t('nav_messages'), href: '#/messages' });
     }
     if (['proviseur', 'principal', 'directeur', 'econome', 'comptable'].includes(user.role_code)) {
@@ -86,7 +87,7 @@ const DashboardPage = {
         <div class="stat-card">
           <div class="stat-icon">${UI.icon('users', 18)}</div>
           <div class="stat-label">${I18N.current === 'fr' ? 'Compte' : 'Account'}</div>
-          <div class="stat-value" style="font-size:16px">${user.email}</div>
+          <div class="stat-value" style="font-size:16px">${UI.esc(user.email)}</div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">${UI.icon('building', 18)}</div>

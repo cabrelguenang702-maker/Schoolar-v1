@@ -58,12 +58,19 @@ Deno.serve(async (req) => {
 
   // Pré-lecture du profil : nécessaire pour vérifier le verrouillage AVANT
   // même de tenter le mot de passe, et pour incrémenter les échecs ensuite.
+  // La migration 0002 a ajouté establishments.validated_by_profile_id : l'embed
+  // "establishments" est devenu ambigu pour PostgREST (PGRST201) → on nomme la FK.
+  // Avec un code établissement, !inner exclut le profil si le code ne correspond pas.
+  const establishmentEmbed = establishment_code
+    ? "establishments!profiles_establishment_id_fkey!inner(name, status, education_level)"
+    : "establishments!profiles_establishment_id_fkey(name, status, education_level)";
   let profileQuery = db
     .from("profiles")
     .select(`
-      id, email, status, admin_verified_at, failed_login_attempts, locked_until, must_change_password,
-      establishment_id, roles!inner(code),
-      establishments(status, education_level)
+      id, email, first_name, last_name, phone, photo_url, language_pref,
+      status, admin_verified_at, failed_login_attempts, locked_until, must_change_password,
+      establishment_id, roles!inner(code, label_fr, label_en, scope),
+      ${establishmentEmbed}
     `)
     .eq("email", email);
 
@@ -109,8 +116,9 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { error: "login_invalid_credentials" }, 401);
   }
 
-  const roleCode = (profile.roles as unknown as { code: string }).code;
-  const establishmentRow = profile.establishments as unknown as { status: string; education_level: string } | null;
+  const role = profile.roles as unknown as { code: string; label_fr: string; label_en: string; scope: string };
+  const roleCode = role.code;
+  const establishmentRow = profile.establishments as unknown as { name: string; status: string; education_level: string } | null;
   const establishmentStatus = establishmentRow?.status;
 
   if (profile.status !== "active") {
@@ -160,8 +168,17 @@ Deno.serve(async (req) => {
       user: {
         id: profile.id,
         email: profile.email,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        phone: profile.phone,
+        photo_url: profile.photo_url,
+        language_pref: profile.language_pref,
         role_code: roleCode,
+        role_label_fr: role.label_fr,
+        role_label_en: role.label_en,
+        role_scope: role.scope,
         establishment_id: profile.establishment_id,
+        establishment_name: establishmentRow?.name ?? null,
         establishment_education_level: establishmentRow?.education_level ?? null,
         totp_enabled: requiresTwoFactor,
         must_change_password: profile.must_change_password,

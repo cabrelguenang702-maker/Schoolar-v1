@@ -43,10 +43,10 @@ const ParentInvitationConfirmPage = {
           <div class="form-sub">${t('parent_invitation_subtitle')}</div>
 
           <div class="card mt-24">
-            <div class="text-sm text-muted">${info.establishment_name}</div>
-            <div style="font-weight:600;margin-top:4px;">${info.invited_first_name} ${info.invited_last_name}</div>
-            <div class="text-sm text-muted">${info.invited_email}</div>
-            <div class="text-sm text-muted mt-8">${I18N.current === 'fr' ? 'Enfant' : 'Child'}: ${info.student_first_name} ${info.student_last_name}</div>
+            <div class="text-sm text-muted">${UI.esc(info.establishment_name)}</div>
+            <div style="font-weight:600;margin-top:4px;">${UI.esc(info.invited_first_name)} ${UI.esc(info.invited_last_name)}</div>
+            <div class="text-sm text-muted">${UI.esc(info.invited_email)}</div>
+            <div class="text-sm text-muted mt-8">${I18N.current === 'fr' ? 'Enfant' : 'Child'}: ${UI.esc(info.student_first_name)} ${UI.esc(info.student_last_name)}</div>
           </div>
 
           <form id="pi-form" class="mt-24">

@@ -95,7 +95,7 @@ const MessagesPage = {
         <div class="flex items-center gap-8">
           <div class="avatar">${UI.initials(c.first_name, c.last_name)}</div>
           <div>
-            <div>${c.first_name} ${c.last_name}</div>
+            <div>${UI.esc(c.first_name)} ${UI.esc(c.last_name)}</div>
             <div class="text-muted text-sm">${I18N.current === 'fr' ? c.role_label_fr : c.role_label_en}</div>
           </div>
         </div>
@@ -128,7 +128,7 @@ const MessagesPage = {
         <div class="avatar">${UI.initials(c.other_first_name, c.other_last_name)}</div>
         <div style="flex:1;min-width:0;">
           <div class="flex justify-between items-center">
-            <strong style="font-size:13.5px;">${c.other_first_name} ${c.other_last_name}</strong>
+            <strong style="font-size:13.5px;">${UI.esc(c.other_first_name)} ${UI.esc(c.other_last_name)}</strong>
             ${c.unread_count > 0 ? `<span class="badge badge-danger" style="font-size:10px;padding:2px 7px;">${c.unread_count}</span>` : ''}
           </div>
           <div class="text-muted text-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.last_message_body || ''}</div>
@@ -166,7 +166,7 @@ const MessagesPage = {
           ${this.state.messages.map(m => `
             <div style="display:flex;${m.sender_id === this.user.id ? 'justify-content:flex-end;' : ''}margin-bottom:10px;">
               <div style="max-width:70%;padding:10px 14px;border-radius:14px;background:${m.sender_id === this.user.id ? 'var(--color-primary)' : 'var(--color-bg)'};color:${m.sender_id === this.user.id ? 'white' : 'var(--color-text)'};">
-                <div style="font-size:14px;">${m.body}</div>
+                <div style="font-size:14px;">${UI.esc(m.body)}</div>
                 <div style="font-size:11px;opacity:.7;margin-top:4px;">${new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
               </div>
             </div>
